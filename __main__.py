@@ -1,35 +1,29 @@
-import os
-import yaml
-import typing
+import argparse
+import importlib
+import collections
 
-from . import problem
+deploy = importlib.import_module("__init__", "./__init__.py")
+
+parser = argparse.ArgumentParser()
+subparsers = parser.add_subparsers(dest="command", metavar="command")
+
+search_parser = subparsers.add_parser("search", help="search for problems in a directory")
+search_parser.add_argument("path", help="the path to search")
 
 
-def search(path: str) -> typing.List[problem.HostedProblem]:
-    """Parse the problems in a problem directory path.
+namespace = parser.parse_args()
+if namespace.command == "search":
+    frequency = collections.Counter()
 
-    The parse command searches all files in the second level of the
-    specified directory for `problem.yml` files, as the expected file
-    structure is:
+    print("\nSearch Issues\n" + "-"*30)
+    problems = deploy.search(namespace.path)
 
-    path/
-      category/
-        problem/
-          problem.yml
+    print("\nCurrent Problems\n" + "-"*30)
+    for problem in problems:
+        print("{}/{}".format(problem.category, problem.name))
+        frequency[problem.category] += 1
 
-    Problems that are not enabled are still loaded, however further
-    parsing is halted after this determination.
-    """
-
-    problems = []
-    for category in os.listdir(path):
-        if category.startswith("_"):
-            continue
-        category_path = os.path.join(path, category)
-        for problem in os.listdir(category_path):
-            problem_path = os.path.join(category_path, problem)
-            problem_file_path = os.path.join(problem_path, "problem.yml")
-            if os.path.isfile():
-                with open(problem_file_path) as file:
-                    config = yaml.load(file)
-                problems.append(problem.load(config))
+    print("\nStatistics\n" + "-"*30)
+    print("Total: {}".format(len(problems)))
+    for category in frequency:
+        print("  {}: {}".format(category.capitalize(), frequency[category]))

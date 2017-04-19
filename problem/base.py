@@ -1,4 +1,6 @@
 import abc
+import os
+import markdown
 
 
 class AbstractProblem(abc.ABC, metaclass=abc.ABCMeta):
@@ -16,13 +18,18 @@ class AbstractProblem(abc.ABC, metaclass=abc.ABCMeta):
 class Problem(AbstractProblem):
     """Default problem with an empty deployment method."""
 
-    def __init__(self, category: str, name: str, config: dict):
+    def __init__(self, **config):
         """Initialize the problem based on the configuration."""
 
-        indicator = "{}/{}".format(category, name)
-        if "name" not in config:
-            raise SyntaxError("Problem missing name in {}.".format(indicator))
         self.name = config["name"]
+        self.category = config["category"]
+        self.value = int(config["value"])
+        self.text = config["text"]
+        self.hint = config["hint"]
+        self.flag = config["flag"]
+        self.author = config.get("author")
+        self.files = config.get("files")
+        self.enabled = config.get("enabled", True)
 
     def export(self):
         pass
