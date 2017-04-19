@@ -1,6 +1,4 @@
 import abc
-import os
-import markdown
 
 
 class AbstractProblem(abc.ABC, metaclass=abc.ABCMeta):
