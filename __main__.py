@@ -1,8 +1,10 @@
+import os
 import argparse
 import importlib
 import collections
 
-deploy = importlib.import_module("__init__", "./__init__.py")
+init = os.path.join(os.path.dirname(os.path.abspath(__file__)), "__init__.py")
+deploy = importlib.import_module("__init__", init)
 
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(dest="command", metavar="command")
