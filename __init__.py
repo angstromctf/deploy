@@ -53,7 +53,10 @@ class Problem:
     def deploy(self, path: str):
         """Deploy a normal, static problem. Moves files."""
 
-        to = os.path.join(path, self.name)
+        directory = os.path.join(path, self.category)
+        to = os.path.join(directory, self.name)
+        if not os.path.isdir(os.path.dirname(to)):
+            os.makedirs(directory, exist_ok=True)
         print("Copying files to {}".format(to))
         for file in self.files:
             shutil.copy(file, to)
@@ -66,11 +69,10 @@ class DockerProblem(Problem):
         """Initialize a docker problem."""
 
         super().__init__(category, name, **config)
-        print("Created a docker problem.")
+        #print("Created a docker problem.")
 
     def deploy(self, path: str):
         """Deploy the docker problem."""
-        pass
 
 
 class ShellProblem(Problem):
@@ -80,7 +82,7 @@ class ShellProblem(Problem):
         """Initialize a shell problem."""
 
         super().__init__(category, name, **config)
-        print("Created a shell problem.")
+        #print("Created a shell problem.")
 
     def deploy(self, path: str):
         """Deploy the problem to a directory."""
