@@ -69,5 +69,5 @@ elif namespace.command == "docker":
         try:
             problem.deploy()
         except Exception as e:
-            print("Probably couldn't find docker file: " + e)
+            print("Probably couldn't find docker file:", e)
         print("Deployed {}/{}".format(problem.category, problem.name))
