@@ -64,7 +64,7 @@ elif namespace.command == "docker":
 
     print("\nDeploying...")
     for problem in problems:
-        if not problem.enabled:
+        if not problem.enabled or type(problem) != deploy.DockerProblem:
             continue
-        problem.deploy(namespace.out)
+        problem.deploy()
         print("Deployed {}/{}".format(problem.category, problem.name))

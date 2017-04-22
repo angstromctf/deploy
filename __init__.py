@@ -65,7 +65,7 @@ class Problem:
             "flag": hashlib.sha512(self.flag.encode()).hexdigest(),
             "enabled": self.enabled}
 
-    def deploy(self, path: str):
+    def deploy(self):
         """Deploy a normal, static problem. Moves files."""
 
         pass
@@ -80,7 +80,7 @@ class DockerProblem(Problem):
         super().__init__(directory, category, name, **config)
         #print("Created a docker problem.")
 
-    def deploy(self, path: str):
+    def deploy(self):
         """Deploy the docker problem."""
 
         client = docker.DockerClient()
@@ -111,10 +111,10 @@ class ShellProblem(Problem):
         super().__init__(directory, category, name, **config)
         #print("Created a shell problem.")
 
-    def deploy(self, path: str):
+    def deploy(self):
         """Deploy the problem to a directory."""
 
-        super().deploy(path)
+        super().deploy()
         # Shell problems were installed manually
 
 
