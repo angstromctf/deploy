@@ -46,15 +46,14 @@ class Problem:
         text = markdown.markdown(text)
         hint = markdown.markdown(self.hint)
 
-        if not self.files:
-            return
-        directory = os.path.join(static, self.category)
-        to = os.path.join(directory, self.name)
-        if not os.path.isdir(to):
-            os.makedirs(to, exist_ok=True)
-        print("Copying files to {}".format(to))
-        for file in self.files:
-            shutil.copy(file, to)
+        if self.files:
+            directory = os.path.join(static, self.category)
+            to = os.path.join(directory, self.name)
+            if not os.path.isdir(to):
+                os.makedirs(to, exist_ok=True)
+            print("Copying files to {}".format(to))
+            for file in self.files:
+                shutil.copy(file, to)
 
         return {
             "name": self.name,
