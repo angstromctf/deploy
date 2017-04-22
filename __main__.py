@@ -59,7 +59,7 @@ elif namespace.command == "export":
     print("Exported {} problems to {}.".format(count, namespace.out))
 
 
-elif namespace.command == "deploy":
+elif namespace.command == "static":
 
     print("\nSearching...")
     problems = deploy.search(namespace.path)
