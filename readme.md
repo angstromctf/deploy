@@ -27,7 +27,7 @@ Optionally, include a hardcoded link for static files reference in the text:
 python3 deploy export /path/to/problems/ output_file.json --url https://angstromctf.com
 ```
 
-# Deploy
+## Deploy
 
 To export static problem files listed in the `file` field of the `problem.yml`
 field, run the following command:
