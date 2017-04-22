@@ -25,7 +25,7 @@ class Problem:
         self.value = int(config["value"])
         self.text = config["text"]
         self.hint = config["hint"]
-        self.flag = config["flag"]
+        self.flag = config["flag"].strip()
         self.author = config.get("author")
         self.files = config.get("files")
         self.enabled = config.get("enabled", True)
