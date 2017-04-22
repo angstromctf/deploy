@@ -4,6 +4,7 @@ import yaml
 import shutil
 import markdown
 import typing
+import docker
 
 
 REQUIRED = {"title": str, "value": int, "text": str, "hint": str, "flag": str}
@@ -26,6 +27,7 @@ class Problem:
         self.author = config.get("author")
         self.files = config.get("files")
         self.enabled = config.get("enabled", True)
+        self.settings = config.get("deploy", {})
 
         self.replace = {}
         if self.files:
@@ -47,8 +49,7 @@ class Problem:
             "text": text,
             "value": self.value,
             "hint": hint,
-            "category": self.category,
-        }
+            "category": self.category}
 
     def deploy(self, path: str):
         """Deploy a normal, static problem. Moves files."""
@@ -75,6 +76,13 @@ class DockerProblem(Problem):
 
     def deploy(self, path: str):
         """Deploy the docker problem."""
+
+        client = docker.DockerClient()
+        name = self.category + "-" + self.name
+        try:
+            info = client.inspect_image(name)
+        except:
+            pass
 
 
 class ShellProblem(Problem):
