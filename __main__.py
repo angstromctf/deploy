@@ -66,5 +66,8 @@ elif namespace.command == "docker":
     for problem in problems:
         if not problem.enabled or type(problem) != deploy.DockerProblem:
             continue
-        problem.deploy()
+        try:
+            problem.deploy()
+        except Exception as e:
+            print("Probably couldn't find docker file: " + e)
         print("Deployed {}/{}".format(problem.category, problem.name))
