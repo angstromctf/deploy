@@ -19,9 +19,8 @@ export_parser.add_argument("out", help="the JSON file path to write to")
 export_parser.add_argument("static", help="static files directory")
 export_parser.add_argument("--url", help="URL to point static CTF files to", default=os.environ.get("CTF_URL", ""))
 
-deploy_parser = subparsers.add_parser("static", help="deploy problems to a JSON file")
-deploy_parser.add_argument("path", help="the path to search")
-deploy_parser.add_argument("out", help="the output path to deploy problems to")
+docker_parser = subparsers.add_parser("docker", help="deploy docker problems")
+docker_parser.add_argument("path", help="the path to search")
 
 
 namespace = parser.parse_args()
@@ -58,7 +57,7 @@ elif namespace.command == "export":
     print("Exported {} problems to {}.".format(count, namespace.out))
 
 
-elif namespace.command == "static":
+elif namespace.command == "docker":
 
     print("\nSearching...")
     problems = deploy.search(namespace.path)
