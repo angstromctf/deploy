@@ -18,8 +18,13 @@ export_parser.add_argument("path", help="the path to search")
 export_parser.add_argument("out", help="the JSON file path to write to")
 export_parser.add_argument("--url", help="URL to point static CTF files to", default=os.environ.get("CTF_URL", ""))
 
+deploy_parser = subparsers.add_parser("static", help="deploy problems to a JSON file")
+deploy_parser.add_argument("path", help="the path to search")
+deploy_parser.add_argument("out", help="the output path to deploy problems to")
+
 
 namespace = parser.parse_args()
+
 if namespace.command == "search":
     frequency = collections.Counter()
 
@@ -37,17 +42,31 @@ if namespace.command == "search":
         print("  {}: {}".format(category.capitalize(), frequency[category]))
 
 
-if namespace.command == "export":
-
-    print("\nExporting...")
+elif namespace.command == "export":
+    print("\nSearching...")
     problems = deploy.search(namespace.path)
     out = []
     url = namespace.url
     count = 0
+    print("\nDeploying...")
     for problem in problems:
-        if problem.enabled:
-            out.append(problem.export(url=namespace.url))
-            count += 1
+        if not problem.enabled:
+            continue
+        out.append(problem.export(url=namespace.url))
+        count += 1
     with open(namespace.out, "w") as file:
         json.dump(out, file, indent=4)
     print("Exported {} problems to {}.".format(count, namespace.out))
+
+
+elif namespace.command == "deploy":
+
+    print("\nSearching...")
+    problems = deploy.search(namespace.path)
+
+    print("\nDeploying...")
+    for problem in problems:
+        if not problem.enabled:
+            continue
+        problem.deploy(namespace.out)
+        print("Deployed {}/{}".format(problem.category, problem.name))

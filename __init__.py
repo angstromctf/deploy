@@ -53,10 +53,12 @@ class Problem:
     def deploy(self, path: str):
         """Deploy a normal, static problem. Moves files."""
 
+        if not self.files:
+            return
         directory = os.path.join(path, self.category)
         to = os.path.join(directory, self.name)
-        if not os.path.isdir(os.path.dirname(to)):
-            os.makedirs(directory, exist_ok=True)
+        if not os.path.isdir(to):
+            os.makedirs(to, exist_ok=True)
         print("Copying files to {}".format(to))
         for file in self.files:
             shutil.copy(file, to)
@@ -87,7 +89,8 @@ class ShellProblem(Problem):
     def deploy(self, path: str):
         """Deploy the problem to a directory."""
 
-        pass
+        super().deploy(path)
+        # Shell problems were installed manually
 
 
 PROBLEM = {
