@@ -14,9 +14,10 @@ OPTIONAL = {"author": str}
 class Problem:
     """Default problem with an empty deployment method."""
 
-    def __init__(self, category: str, name: str, **config):
+    def __init__(self, directory: str, category: str, name: str, **config):
         """Initialize the problem based on the configuration."""
 
+        self.directory = directory
         self.category = category
         self.name = name
         self.title = config["title"]
@@ -68,10 +69,10 @@ class Problem:
 class DockerProblem(Problem):
     """Docker wrapper for isolated problems."""
 
-    def __init__(self, category: str, name: str, **config):
+    def __init__(self, directory: str, category: str, name: str, **config):
         """Initialize a docker problem."""
 
-        super().__init__(category, name, **config)
+        super().__init__(directory, category, name, **config)
         #print("Created a docker problem.")
 
     def deploy(self, path: str):
@@ -79,19 +80,38 @@ class DockerProblem(Problem):
 
         client = docker.DockerClient()
         name = self.category + "-" + self.name
+
         try:
-            info = client.inspect_image(name)
-        except:
-            pass
+            info = client.info(name)
+        except Exception as e:
+            print(e)
+        else:
+            for container in client.containers(filters={"ancestor": name}):
+                client.remove_container(container["Id"])
+            client.remove_image(info["Id"])
+            print("Removed existing docker image.")
+
+        response = client.build(path=self.directory, rm=True, tag=name, quiet=True)
+        print("Response from client build: " + response)
+
+        ports = []
+        bindings = {}
+        if "ports" in self.settings:
+            for inner, outer in self.settings["ports"]:
+                ports.append(inner)
+                bindings[inner] = outer
+        container = client.create_container(
+            name, ports=ports, host_config=client.create_host_config(port_bindings=bindings))
+        client.start(container=container["Id"])
 
 
 class ShellProblem(Problem):
     """Shell problem model."""
 
-    def __init__(self, category: str, name: str, **config):
+    def __init__(self, directory: str, category: str, name: str, **config):
         """Initialize a shell problem."""
 
-        super().__init__(category, name, **config)
+        super().__init__(directory, category, name, **config)
         #print("Created a shell problem.")
 
     def deploy(self, path: str):
@@ -108,7 +128,7 @@ PROBLEM = {
 
 
 def load(path: str) -> Problem or None:
-    """Load a problem from its directory."""
+    """Load a problem from its problem file path."""
 
     directory = os.path.dirname(path)
     reference = os.sep.join(directory.split(os.sep)[-2:])
@@ -158,7 +178,7 @@ def load(path: str) -> Problem or None:
                 print("No type specified in deploy in {}.".format(reference))
                 return None
 
-    return cast(category, name, **config)
+    return cast(directory, category, name, **config)
 
 
 def search(directory: str) -> typing.List[Problem]:
