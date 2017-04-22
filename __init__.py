@@ -5,6 +5,7 @@ import shutil
 import markdown
 import typing
 import docker
+import hashlib
 
 
 REQUIRED = {"title": str, "value": int, "text": str, "hint": str, "flag": str}
@@ -24,7 +25,7 @@ class Problem:
         self.value = int(config["value"])
         self.text = config["text"]
         self.hint = config["hint"]
-        self.flag = config["flag"]
+        self.flag = config["flag"].strip()
         self.author = config.get("author")
         self.files = config.get("files")
         self.enabled = config.get("enabled", True)
@@ -34,9 +35,9 @@ class Problem:
         if self.files:
             for path in self.files:
                 basename = os.path.basename(path)
-                self.replace[os.path.basename(path)] = "/" + os.path.join(category, name, basename).replace(os.sep, "/")
+                self.replace[os.path.basename(path)] = "/static/" + os.path.join(category, name, basename).replace(os.sep, "/")
 
-    def export(self, url=""):
+    def export(self, url="", static=""):
         """Export to a model corresponding to the Django API."""
 
         text = self.text
@@ -44,26 +45,30 @@ class Problem:
             text = re.sub("\\{\\{\s*" + path + "\s*\\}\\}", url.rstrip("/") + to, text)
         text = markdown.markdown(text)
         hint = markdown.markdown(self.hint)
+
+        if self.files:
+            directory = os.path.join(static, self.category)
+            to = os.path.join(directory, self.name)
+            if not os.path.isdir(to):
+                os.makedirs(to, exist_ok=True)
+            print("Copying files to {}".format(to))
+            for file in self.files:
+                shutil.copy(file, to)
+
         return {
             "name": self.name,
             "title": self.title,
             "text": text,
             "value": self.value,
             "hint": hint,
-            "category": self.category}
+            "category": self.category,
+            "flag": hashlib.sha512(self.flag.encode()).hexdigest(),
+            "enabled": self.enabled}
 
     def deploy(self, path: str):
         """Deploy a normal, static problem. Moves files."""
 
-        if not self.files:
-            return
-        directory = os.path.join(path, self.category)
-        to = os.path.join(directory, self.name)
-        if not os.path.isdir(to):
-            os.makedirs(to, exist_ok=True)
-        print("Copying files to {}".format(to))
-        for file in self.files:
-            shutil.copy(file, to)
+        pass
 
 
 class DockerProblem(Problem):

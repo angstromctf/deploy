@@ -16,6 +16,7 @@ search_parser.add_argument("path", help="the path to search")
 export_parser = subparsers.add_parser("export", help="export problems to a JSON file")
 export_parser.add_argument("path", help="the path to search")
 export_parser.add_argument("out", help="the JSON file path to write to")
+export_parser.add_argument("static", help="static files directory")
 export_parser.add_argument("--url", help="URL to point static CTF files to", default=os.environ.get("CTF_URL", ""))
 
 deploy_parser = subparsers.add_parser("static", help="deploy problems to a JSON file")
@@ -50,9 +51,7 @@ elif namespace.command == "export":
     count = 0
     print("\nDeploying...")
     for problem in problems:
-        if not problem.enabled:
-            continue
-        out.append(problem.export(url=namespace.url))
+        out.append(problem.export(url=namespace.url, static=namespace.static))
         count += 1
     with open(namespace.out, "w") as file:
         json.dump(out, file, indent=4)
