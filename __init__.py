@@ -87,27 +87,19 @@ class DockerProblem(Problem):
         name = self.category + "-" + self.name
 
         try:
-            info = client.info(name)
+            info = client.containers.get(name)
+            for container in client.containers.list(filters={"ancestor": name}, all=True):
+                container.remove(force=True)
+            client.images.remove(name)
+            print("Removed existing docker image and containers.")
         except Exception as e:
             print(e)
-        else:
-            for container in client.containers(filters={"ancestor": name}):
-                client.remove_container(container["Id"])
-            client.remove_image(info["Id"])
-            print("Removed existing docker image.")
 
-        response = client.build(path=self.directory, rm=True, tag=name, quiet=True)
-        print("Response from client build: " + response)
+        response = client.images.build(path=self.directory, rm=True, tag=name, quiet=True)
+        print("Built image.")
 
-        ports = []
-        bindings = {}
-        if "ports" in self.settings:
-            for inner, outer in self.settings["ports"]:
-                ports.append(inner)
-                bindings[inner] = outer
-        container = client.create_container(
-            name, ports=ports, host_config=client.create_host_config(port_bindings=bindings))
-        client.start(container=container["Id"])
+        client.containers.run(name, name=name, ports=self.settings["ports"], detach=True)
+        print("Started container.")
 
 
 class ShellProblem(Problem):
@@ -138,10 +130,11 @@ def load(path: str) -> Problem or None:
     directory = os.path.dirname(path)
     reference = os.sep.join(directory.split(os.sep)[-2:])
     category, name = reference.split(os.sep)
-    config = {}
 
     with open(path) as file:
         raw = yaml.load(file)
+    
+    config = {"deploy": raw.get("deploy")}
 
     for field, cast in REQUIRED.items():
         if field not in raw or raw[field] is None:
