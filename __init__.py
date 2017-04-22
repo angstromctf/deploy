@@ -62,7 +62,8 @@ class Problem:
             "value": self.value,
             "hint": hint,
             "category": self.category,
-            "flag": hashlib.sha512(self.flag.encode()).hexdigest()}
+            "flag": hashlib.sha512(self.flag.encode()).hexdigest(),
+            "enabled": self.enabled}
 
     def deploy(self, path: str):
         """Deploy a normal, static problem. Moves files."""

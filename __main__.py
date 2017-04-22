@@ -51,11 +51,8 @@ elif namespace.command == "export":
     count = 0
     print("\nDeploying...")
     for problem in problems:
-        if not problem.enabled:
-            continue
         out.append(problem.export(url=namespace.url, static=namespace.static))
         count += 1
-        print(problem.name)
     with open(namespace.out, "w") as file:
         json.dump(out, file, indent=4)
     print("Exported {} problems to {}.".format(count, namespace.out))
