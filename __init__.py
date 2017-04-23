@@ -84,7 +84,7 @@ class DockerProblem(Problem):
         """Deploy the docker problem."""
 
         client = docker.DockerClient()
-        name = self.category + "-" + self.name
+        name = (self.category + "-" + self.name).lower()
 
         try:
             info = client.containers.get(name)
