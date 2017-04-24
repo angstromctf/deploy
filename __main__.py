@@ -22,6 +22,9 @@ export_parser.add_argument("--url", help="URL to point static CTF files to", def
 docker_parser = subparsers.add_parser("docker", help="deploy docker problems")
 docker_parser.add_argument("path", help="the path to search")
 
+group = docker_parser.add_mutually_exclusive_group(required=True)
+group.add_argument('--all', action='store_true')
+group.add_argument('--problem')
 
 namespace = parser.parse_args()
 
@@ -32,8 +35,8 @@ if namespace.command == "search":
     problems = deploy.search(namespace.path)
 
     print("\nCurrent Problems\n" + "-"*30)
-    for problem in problems:
-        print("{}/{}".format(problem.category, problem.name))
+    for id, problem in problems.items():
+        print(id)
         frequency[problem.category] += 1
 
     print("\nStatistics\n" + "-"*30)
@@ -44,30 +47,46 @@ if namespace.command == "search":
 
 elif namespace.command == "export":
     print("\nSearching...")
+
     problems = deploy.search(namespace.path)
+
     out = []
     url = namespace.url
     count = 0
+
     print("\nDeploying...")
-    for problem in problems:
+
+    for problem in problems.values():
         out.append(problem.export(url=namespace.url, static=namespace.static))
         count += 1
+
     with open(namespace.out, "w") as file:
         json.dump(out, file, indent=4)
+
     print("Exported {} problems to {}.".format(count, namespace.out))
 
 
 elif namespace.command == "docker":
-
     print("\nSearching...")
+
     problems = deploy.search(namespace.path)
 
     print("\nDeploying...")
-    for problem in problems:
-        if not problem.enabled or type(problem) != deploy.DockerProblem:
-            continue
+
+    if namespace.all:
+        for problem in problems.values():
+            if not problem.enabled or type(problem) != deploy.DockerProblem:
+                continue
+            try:
+                problem.deploy()
+                print("Deployed", problem.id)
+            except Exception as e:
+                print(e)
+    else:
+        problem = problems[namespace.problem]
+
         try:
             problem.deploy()
+            print("Deployed", problem.id)
         except Exception as e:
-            print("Probably couldn't find docker file:", e)
-        print("Deployed {}/{}".format(problem.category, problem.name))
+            print(e)

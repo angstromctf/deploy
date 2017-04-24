@@ -26,6 +26,7 @@ class Problem:
         self.text = config["text"]
         self.hint = config["hint"]
         self.flag = config["flag"].strip()
+        self.id = category + '/' + name
         self.author = config.get("author")
         self.files = config.get("files")
         self.enabled = config.get("enabled", True)
@@ -78,7 +79,6 @@ class DockerProblem(Problem):
         """Initialize a docker problem."""
 
         super().__init__(directory, category, name, **config)
-        #print("Created a docker problem.")
 
     def deploy(self):
         """Deploy the docker problem."""
@@ -87,7 +87,6 @@ class DockerProblem(Problem):
         name = (self.category + "-" + self.name).lower()
 
         try:
-            info = client.containers.get(name)
             for container in client.containers.list(filters={"ancestor": name}, all=True):
                 container.remove(force=True)
             client.images.remove(name)
@@ -109,7 +108,6 @@ class ShellProblem(Problem):
         """Initialize a shell problem."""
 
         super().__init__(directory, category, name, **config)
-        #print("Created a shell problem.")
 
     def deploy(self):
         """Deploy the problem to a directory."""
@@ -195,7 +193,7 @@ def search(directory: str) -> typing.List[Problem]:
     parsing is halted after this determination.
     """
 
-    problems = []
+    problems = {}
     directory = os.path.abspath(os.path.normpath(directory))
 
     for category in os.listdir(directory):
@@ -212,6 +210,6 @@ def search(directory: str) -> typing.List[Problem]:
             if os.path.isfile(problem_path):
                 problem_object = load(problem_path)
                 if problem_object:
-                    problems.append(problem_object)
+                    problems[problem_object.id] = problem_object
 
     return problems
