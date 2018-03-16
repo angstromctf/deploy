@@ -94,7 +94,7 @@ class DockerProblem(Problem):
         except Exception as e:
             print(e)
 
-        response = client.images.build(path=self.directory, rm=True, tag=name, quiet=True)
+        response = client.images.build(path=os.path.join(self.directory, "deploy"), rm=True, tag=name, quiet=True)
         print("Built image.")
 
         client.containers.run(name, name=name, ports=self.settings["ports"], detach=True)
@@ -131,7 +131,7 @@ def load(path: str) -> Problem or None:
 
     with open(path) as file:
         raw = yaml.load(file)
-    
+
     config = {"deploy": raw.get("deploy")}
 
     for field, cast in REQUIRED.items():
