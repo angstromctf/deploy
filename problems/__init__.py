@@ -63,7 +63,7 @@ class Problem:
             "value": self.value,
             "hint": hint,
             "category": self.category,
-            "flag": hashlib.sha512(self.flag.encode()).hexdigest(),
+            "flag": hashlib.sha512(self.flag.lower().encode()).hexdigest(),
             "enabled": self.enabled}
 
     def deploy(self):
@@ -90,7 +90,7 @@ class DockerProblem(Problem):
             for container in client.containers.list(filters={"ancestor": name}, all=True):
                 container.remove(force=True)
             client.images.remove(name)
-            print("Removed existing docker image and containers.")
+            print("Removed existing docker images and containers.")
         except Exception as e:
             print(e)
 
@@ -136,7 +136,7 @@ def load(path: str) -> Problem or None:
 
     for field, cast in REQUIRED.items():
         if field not in raw or raw[field] is None:
-            print("Problem missing title in {}.".format(reference))
+            print("Problem missing {} in {}.".format(field, reference))
             return None
         config[field] = cast(raw[field])
 
